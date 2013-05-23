@@ -1,11 +1,23 @@
 config PVR_SGX
 	tristate "PowerVR SGX support"
 	depends on ARCH_S5PV210
+	depends on ION_S5P
+	depends on SW_SYNC
 	help
 	  Enable this option to build support for the PowerVR SGX 3D core.
 
 	  To compile this driver as a module, choose M here:
 	  this will generate two modules, called pvrsrvkm and s3c_lcd.
+
+choice
+	prompt "PowerVR SGX core"
+	depends on PVR_SGX
+	default PVR_SGXCORE_540
+
+config PVR_SGXCORE_540
+	bool "SGX 540"
+
+endchoice
 
 choice
 	prompt "PowerVR build type"
@@ -52,15 +64,7 @@ config PVR_DEBUG_BRIDGE_KM_DISPATCH_TABLE
 	depends on PVR_BUILD_DEBUG
 	default n
 
-
-#
 # General options
-#
-
-config PVR_PERCONTEXT_PB
-	bool "Per-context parameter buffer (recommended)"
-	depends on PVR_SGX
-	default y
 
 config PVR_ACTIVE_POWER_MANAGEMENT
 	bool "Support for active power management (recommended)"

@@ -577,13 +577,13 @@ static void keyboard_late_resume(struct early_suspend *early_sus)
 
 
 #if defined(CONFIG_PM)
-static int dock_keyboard_suspend(struct platform_device *pdev, pm_message_t state)
+static int dock_keyboard_suspend(struct device *dev)
 {
 //    struct dock_keyboard_data *data = pdev->dev.platform_data;
     return 0;
 }
 
-static int dock_keyboard_resume(struct platform_device *pdev)
+static int dock_keyboard_resume(struct device *dev)
 {
 //    struct dock_keyboard_data *data = pdev->dev.platform_data;
     return 0;

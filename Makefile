@@ -1,6 +1,6 @@
 VERSION = 3
 PATCHLEVEL = 0
-SUBLEVEL = 82
+SUBLEVEL = 83
 EXTRAVERSION =
 NAME = Sneaky Weasel
 
@@ -349,7 +349,7 @@ CHECKFLAGS     := -D__linux__ -Dlinux -D__STDC__ -Dunix -D__unix__ \
 		  -Wbitwise -Wno-return-void $(CF)
 CFLAGS_MODULE   =
 AFLAGS_MODULE   =
-LDFLAGS_MODULE  =
+LDFLAGS_MODULE  = --strip-debug
 CFLAGS_KERNEL	=
 AFLAGS_KERNEL	=
 CFLAGS_GCOV	= -fprofile-arcs -ftest-coverage
@@ -368,6 +368,13 @@ KBUILD_CFLAGS   := -Wall -Wundef -Wstrict-prototypes -Wno-trigraphs \
 		   -fno-strict-aliasing -fno-common \
 		   -Werror-implicit-function-declaration \
 		   -Wno-format-security \
+		   -fmodulo-sched \
+		   -fmodulo-sched-allow-regmoves \
+		   -mcpu=cortex-a9 \
+		   -mtune=cortex-a9 \
+		   -funswitch-loops \
+		   -fpredictive-commoning \
+		   -fgcse-after-reload \
 		   -fno-delete-null-pointer-checks
 KBUILD_AFLAGS_KERNEL :=
 KBUILD_CFLAGS_KERNEL :=
@@ -401,7 +408,6 @@ export MODVERDIR := $(if $(KBUILD_EXTMOD),$(firstword $(KBUILD_EXTMOD))/).tmp_ve
 # Files to ignore in find ... statements
 
 RCS_FIND_IGNORE := \( -name SCCS -o -name BitKeeper -o -name .svn -o -name CVS -o -name .pc -o -name .hg -o -name .git \) -prune -o
-BUILD_FIND_IGNORE := -path ./build -prune -o
 export RCS_TAR_IGNORE := --exclude SCCS --exclude BitKeeper --exclude .svn --exclude CVS --exclude .pc --exclude .hg --exclude .git
 
 # ===========================================================================
@@ -563,6 +569,14 @@ ifdef CONFIG_CC_OPTIMIZE_FOR_SIZE
 KBUILD_CFLAGS	+= -Os
 else
 KBUILD_CFLAGS	+= -O2
+endif
+
+ifdef CONFIG_CC_CHECK_WARNING_STRICTLY
+KBUILD_CFLAGS	+= -fdiagnostics-show-option -Werror \
+		   -Wno-error=unused-function \
+		   -Wno-error=unused-variable \
+		   -Wno-error=unused-value \
+		   -Wno-error=unused-label
 endif
 
 include $(srctree)/arch/$(SRCARCH)/Makefile
@@ -1205,7 +1219,6 @@ PHONY += distclean
 
 distclean: mrproper
 	@find $(srctree) $(RCS_FIND_IGNORE) \
-		$(BUILD_FIND_IGNORE) \
 		\( -name '*.orig' -o -name '*.rej' -o -name '*~' \
 		-o -name '*.bak' -o -name '#*#' -o -name '.*.orig' \
 		-o -name '.*.rej' -o -size 0 \
@@ -1414,7 +1427,6 @@ clean: $(clean-dirs)
 	$(call cmd,rmdirs)
 	$(call cmd,rmfiles)
 	@find $(if $(KBUILD_EXTMOD), $(KBUILD_EXTMOD), .) $(RCS_FIND_IGNORE) \
-		$(BUILD_FIND_IGNORE) \
 		\( -name '*.[oas]' -o -name '*.ko' -o -name '.*.cmd' \
 		-o -name '.*.d' -o -name '.*.tmp' -o -name '*.mod.c' \
 		-o -name '*.symtypes' -o -name 'modules.order' \
@@ -1436,13 +1448,11 @@ PHONY += includecheck versioncheck coccicheck namespacecheck export_report
 
 includecheck:
 	find $(srctree)/* $(RCS_FIND_IGNORE) \
-		$(BUILD_FIND_IGNORE) \
 		-name '*.[hcS]' -type f -print | sort \
 		| xargs $(PERL) -w $(srctree)/scripts/checkincludes.pl
 
 versioncheck:
 	find $(srctree)/* $(RCS_FIND_IGNORE) \
-		$(BUILD_FIND_IGNORE) \
 		-name '*.[hcS]' -type f -print | sort \
 		| xargs $(PERL) -w $(srctree)/scripts/checkversion.pl
 
